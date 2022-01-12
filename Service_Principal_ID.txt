@@ -1,0 +1,5 @@
+  "appId": "1f3ba9ff-6d0c-402c-813d-74e33e0d9cc8",
+  "displayName": "azure-cli-2022-01-04-08-31-31",
+  "name": "1f3ba9ff-6d0c-402c-813d-74e33e0d9cc8",
+  "password": "V_2wZXEGj.R8CEbd8vl.4weib04FtSx12P",
+  "tenant": "13281b93-20d2-4d35-b190-fdaa4a7ab097"

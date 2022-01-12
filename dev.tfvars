@@ -1,0 +1,2 @@
+environment = "tst"
+location    = "westeurope"

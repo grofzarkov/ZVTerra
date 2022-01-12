@@ -1,0 +1,17 @@
+variables:
+- name: AzureSubcription
+  value: 06e99d25-070f-4551-b8c3-e7121d9d3d17
+- name: 'vmImageName'
+  value: 'ubuntu-latest'
+- name: tfscriptsfolder
+  value: 'tf scripts'
+- name: 'serviceConnection'
+  value: 'AzureDevopsRelease'
+- name: 'backendAzureRmResourceGroupName'
+  value: 'zvstore'
+- name: 'backendAzureRmStorageAccountName'
+  value: 'zmtfstate'
+- name: backendAzureRmContainerName
+  value: 'tfstate'
+- name: backendAzureRmKey
+  value: 'HotelReservationSystem.tfstate'

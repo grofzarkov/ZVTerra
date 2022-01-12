@@ -1,0 +1,100 @@
+# A pipeline with no CI trigger
+trigger: none
+
+parameters:
+- name: environment
+  type: string
+  displayName: Environment
+  values:
+  - Development
+  - Production
+
+- name: initTerraform
+  displayName: Init terraform
+  type: boolean
+  default: false
+
+- name: planTerraform
+  displayName: Plan terraform scripts
+  type: boolean
+  default: false
+
+- name: applyTerraform
+  displayName: Apply terraform scripts
+  type: boolean
+  default: false
+
+
+variables:
+  - name: vmImageName
+    value: 'ubuntu-latest'
+  - name: version.MajorMinor
+    value: '1.0' # Manually adjust the version number as needed for semantic versioning. Revision is auto-incremented.
+  - name: version.Revision
+    value: $[counter(variables['version.MajorMinor'], 0)]
+  - name: versionNumber
+    value: '$(version.MajorMinor).$(version.Revision)'
+  - template: './variables.yml'
+  
+jobs:  
+- job: Build
+  pool:
+    vmImage: $(vmImageName)
+  steps:
+  - task: PowerShell@2
+    displayName: Set the name of the build (i.e. the Build.BuildNumber)
+    inputs:
+      targetType: 'inline'
+      script: |
+        [string] $buildName = "$(versionNumber)_$(Build.SourceBranchName)"
+        Write-Host "Setting the name of the build to '$buildName'."
+        Write-Host "##vso[build.updatebuildnumber]$buildName"
+
+  - task: TerraformInstaller@0
+    displayName: 'Install Terraform'
+    condition: and(succeeded(), or(eq('${{ parameters.initTerraform }}', true), eq('${{ parameters.planTerraform }}', true), eq('${{ parameters.applyTerraform }}', true)))
+    inputs:
+      terraformVersion: '0.14.10'
+
+  - task: TerraformTaskV1@0
+    displayName: 'Init Terraform scripts'
+    condition: and(succeeded(), eq('${{ parameters.initTerraform }}', true))
+    inputs:
+      provider: 'azurerm'
+      command: 'init'
+      workingDirectory: '$(System.DefaultWorkingDirectory)/${{ variables.tfscriptsfolder }}'
+      backendServiceArm: ${{ variables.serviceConnection }}
+      backendAzureRmResourceGroupName: ${{ variables.backendAzureRmResourceGroupName }}
+      backendAzureRmStorageAccountName: ${{ variables.backendAzureRmStorageAccountName }}
+      backendAzureRmContainerName: ${{ variables.backendAzureRmContainerName }}
+      backendAzureRmKey: ${{ variables.backendAzureRmKey }}
+
+  - task: TerraformTaskV1@0
+    displayName: 'Plan Terraform scripts'
+    condition: and(succeeded(), eq('${{ parameters.planTerraform }}', true))
+    inputs:
+      provider: 'azurerm'
+      command: 'plan'
+      commandOptions: '-var-file=dev.tfvars'
+      workingDirectory: '$(System.DefaultWorkingDirectory)/${{ variables.tfscriptsfolder }}'
+      environmentServiceNameAzureRM: ${{ variables.serviceConnection }}
+
+  - task: TerraformTaskV1@0
+    displayName: 'Apply Terraform scripts'
+    condition: and(succeeded(), eq('${{ parameters.applyTerraform }}', true))
+    inputs:
+      provider: 'azurerm'
+      command: 'apply'
+      commandOptions: '-var-file=dev.tfvars -auto-approve'
+      workingDirectory: '$(System.DefaultWorkingDirectory)/${{ variables.tfscriptsfolder }}'
+      environmentServiceNameAzureRM: ${{ variables.serviceConnection }}
+
+
+
+  - task: KubernetesManifest@0
+    displayName: Deploy K8s manifests
+    inputs:
+      kubernetesServiceConnection: k8sServiceConnection
+      namespace: default
+      manifests: k8manifest.yml
+      containers: acrhotelreservationsystemdev.azurecr.io/reservationsystem:v1

@@ -1,0 +1,39 @@
+apiVersion: apps/v1 # Where in the API it resides
+kind: Deployment # The kind of workload we're creating
+
+metadata:
+  name: reservationsystem # This will be the name of the deployment
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: reservationsystem
+  template:
+    metadata:
+      labels:
+        app: reservationsystem
+    spec:
+      containers:
+      - name: reservationsystem
+        image: acrhotelreservationsystemdev.azurecr.io/reservationsystem:v1
+        ports:
+        - containerPort: 80
+          protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: reservationsystem
+  labels: 
+    app: reservationsystem
+spec:
+  type: LoadBalancer
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+      nodePort: 30036
+      protocol: TCP
+  selector:
+    app: reservationsystem

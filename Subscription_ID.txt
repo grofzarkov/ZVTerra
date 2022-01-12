@@ -1,0 +1,11 @@
+ "cloudName": "AzureCloud",
+    "homeTenantId": "13281b93-20d2-4d35-b190-fdaa4a7ab097",
+    "id": "06e99d25-070f-4551-b8c3-e7121d9d3d17",
+    "isDefault": true,
+    "managedByTenants": [],
+    "name": "ZareCare",
+    "state": "Enabled",
+    "tenantId": "13281b93-20d2-4d35-b190-fdaa4a7ab097",
+    "user": {
+      "name": "jasminavasiljevikj@outlook.com",
+      "type": "user"
